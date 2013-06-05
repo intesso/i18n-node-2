@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>I18n-node by mashpie</title>
+    <title>loc by intesso</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
@@ -15,165 +15,234 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>I18n-node</h1>
-        <p>Lightweight simple translation module for node.js / express.js with dynamic json storage. Uses common __('...') syntax in app and templates.</p>
+        <h1>loc</h1>
+        <p>Full featured localization module for express.js</p>
 
-        <p class="view"><a href="https://github.com/mashpie/i18n-node">View the Project on GitHub <small>mashpie/i18n-node</small></a></p>
+        <p class="view"><a href="https://github.com/intesso/loc">View the Project on GitHub <small>intesso/loc</small></a></p>
 
 
         <ul>
-          <li><a href="https://github.com/mashpie/i18n-node/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/mashpie/i18n-node/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/mashpie/i18n-node">View On <strong>GitHub</strong></a></li>
+          <li><a href="https://github.com/intesso/loc/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/intesso/loc/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/intesso/loc">View On <strong>GitHub</strong></a></li>
         </ul>
       </header>
       <section>
-        <h1>i18n</h1>
+        <h1>
+<a name="loc" class="anchor" href="#loc"><span class="octicon octicon-link"></span></a>loc</h1>
 
-<p>Lightweight simple translation module with dynamic json storage. 
-Uses common __('...') syntax in app and templates.
-Stores language files in json files compatible to <a href="http://webtranslateit.com/">webtranslateit</a> json format.
-Adds new strings on-the-fly when first used in your app.
-No extra parsing needed.</p>
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
 
-<p><a href="http://travis-ci.org/mashpie/i18n-node"><img src="https://secure.travis-ci.org/mashpie/i18n-node.png?branch=master" alt="Build Status"></a></p>
+<ul>
+<li>Full featured localization module for express.js</li>
+<li>server side translation</li>
+<li>Pluggable storages</li>
+<li>Pluggable strategies like query, path, cookie ect.</li>
+<li>Url Translation</li>
+<li>Uses common __('...') syntax in app and templates</li>
+<li>Support for plurals</li>
+<li>Stores language files in json files compatible to <a href="http://webtranslateit.com/">webtranslateit</a> json format</li>
+<li>Adds new strings on-the-fly when first used in your app</li>
+<li>Nested, hierarchical contexts, separated in different files</li>
+<li>Uses the closest to the preferred user locale, if not set explicitely by the user request</li>
+<li>Automatic fallback to more generic localization (<a href="http://www.rfc-editor.org/rfc/rfc4647.txt">http://www.rfc-editor.org/rfc/rfc4647.txt</a>)</li>
+<li>Support for locale names according to <a href="http://www.rfc-editor.org/rfc/bcp/bcp47.txt">http://www.rfc-editor.org/rfc/bcp/bcp47.txt</a>
+</li>
+<li>No extra parsing needed.</li>
+<li>Handles simultaneous requests with different locales correctly :-)</li>
+</ul><h2>
+<a name="background" class="anchor" href="#background"><span class="octicon octicon-link"></span></a>Background</h2>
 
-<h2>Install</h2>
+<p>The module was originally developed by <a href="https://github.com/mashpie/i18n-node">https://github.com/mashpie/i18n-node</a>, then forked and refactored by <a href="https://github.com/jeresig/i18n-node-2">https://github.com/jeresig/i18n-node-2</a>. This is a serious refactoring of the latter. Reasons:</p>
 
-<pre><code>npm install i18n
+<ul>
+<li>were not pluggable / extendable</li>
+<li>not specific to express.js</li>
+<li>complicated code</li>
+<li>features missing: url translation, hierarchical contexts, locale fallback, preferred user locale, ...</li>
+</ul><h2>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h2>
+
+<ul>
+<li>better description</li>
+<li>more tests</li>
+<li>client side translation / routes</li>
+<li>import/export language definitions e.g. gettext</li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Run the following:</p>
+
+<pre><code>npm install loc
 </code></pre>
 
-<h2>Test</h2>
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<pre><code>npm test
-</code></pre>
+<h3>
+<a name="load-and-configure" class="anchor" href="#load-and-configure"><span class="octicon octicon-link"></span></a>Load and Configure</h3>
 
-<h2>Load</h2>
+<p>In your app.js:</p>
 
-<p>in your app.js</p>
+<pre><code>// example localization initialization
+var loc = require('loc')({
+    // it gets the locale from the following strategies in this order.
+    // if the locale is not part of the `path`it looks it up in the `query` ect.
+  getLocaleFrom: ['path', 'query', 'subdomain', 'cookie'],
 
-<pre><code>// load modules
-var express = require('express'),
-    i18n = require("i18n");
-</code></pre>
+  // if the locale was found in one of the strategies above, it stores it with this strategy.
+  // in this case in the `cookie`
+  storeLocaleTo: ['cookie'],
 
-<p>now you are ready to use <code>i18n.__('Hello')</code>.</p>
+  // the locale definitions (translations) are retrieved from `file`.
+  storage: 'file',
 
-<h2>Configure</h2>
+  // the following locales are supported (optional). 
+  // If this option is omitted, it accetps what ever is defined in the definitions.
+  locales: ['de', 'de-ch', 'en', 'en-GB', 'en-us'],
 
-<p>use configure to setup these:</p>
+  // locale definition director
+  directory: "./locales",
 
-<pre><code>i18n.configure({
-    // setup some locales - other locales default to en silently
-    locales:['en', 'de'],
+  // locale definition file extension
+  extension: ".json",
 
-    // where to register __() and __n() to, might be "global" if you know what you are doing
-    register: global
+  // Exclude List for the path rewrite middleware used for the path strategy.   
+  // problematic are static assets and url's that start with one to three letters in the path like:
+  // /p/, /js/ or /img/ and should therefore be excluded.
+  excludeList: [".css", ".js", '.ico', '/api/', '/img/', '/css/', '/js/']
 });
+
+// adds all middlewares as bundle
+//loc.bind(app);
+//or add them separately
+
+// adds the loc middleware. adds the req.i18n object.
+app.use(loc.loc());
+
+// adds the locPathRewrite middleware used for the `path` strategy.
+// it redirects the request to the url without the locale in the path. e.g. `/en-GB/about` to `/about` 
+app.use(loc.pathRewrite());
+
+// adds the urlTranslation middleware
+app.use(loc.urlTranslation());
+
+// print out localeCache for debugging purposes 
+loc.writeLocaleCache();
 </code></pre>
 
-<p><strong>CAREFULL:</strong> as jade uses <code>__</code> as internal variable you need to register view helpers tweaked to your needs when used with jade.</p>
+<h3>
+<a name="inside-your-express-view" class="anchor" href="#inside-your-express-view"><span class="octicon octicon-link"></span></a>Inside Your Express View</h3>
 
-<h3>tweak helpers</h3>
-
-<p>configure i18n without register: global</p>
-
-<pre><code>i18n.configure({
-    // setup some locales - other locales default to en silently
-    locales:['en', 'de'],
-});
-</code></pre>
-
-<p>and register view helpers on your own</p>
-
-<pre><code>// register helpers for use in templates
-app.helpers({
-  __i: i18n.__,
-  __n: i18n.__n
-});
-</code></pre>
-
-<h3>hook into express configure</h3>
-
-<p>in an express app, you might use i18n.init to gather language settings of your visitors, ie:</p>
-
-<pre><code>// Configuration
-app.configure(function() {
-
-    [...]
-
-    // using 'accept-language' header to guess language settings
-    app.use(i18n.init);
-    app.use(app.router);
-    app.use(express.static(__dirname + '/public'));
-});
-</code></pre>
-
-<h2>Use</h2>
-
-<p>in your app</p>
-
-<pre><code>var greeting = __('Hello');
-</code></pre>
-
-<p>in your template (depending on your template compiler)</p>
-
-<pre><code>&lt;%= __('Hello') %&gt;
-
-${__('Hello')}
-</code></pre>
-
-<h3>sprintf support</h3>
-
-<pre><code>var greeting = __('Hello %s, how are you today?', 'Marcus');
-</code></pre>
-
-<p>this puts <strong>Hello Marcus, how are you today?</strong>. You might add endless arguments and even nest it.</p>
-
-<pre><code>var greeting = __('Hello %s, how are you today? How was your %s.', 'Marcus', __('weekend'));
-</code></pre>
-
-<p>which puts <strong>Hello Marcus, how are you today? How was your weekend.</strong></p>
-
-<h3>variable support</h3>
-
-<p>you might even use dynamic variables. They get added to the <code>en.js</code> file if not yet existing.</p>
-
-<pre><code>var greetings = ['Hi', 'Hello', 'Howdy'];        
-for (var i=0; i &lt; greetings.length; i++) {
-    console.log( __(greetings[i]) );
+<pre><code>module.exports = {
+    index: function(req, res) {
+        req.render("index", {
+            title: req.i18n.__("My Site Title"),
+            desc: req.i18n.__("My Site Description")
+        });
+    }
 };
 </code></pre>
 
-<p>which puts </p>
+<h3>
+<a name="inside-your-templates-swig-example" class="anchor" href="#inside-your-templates-swig-example"><span class="octicon octicon-link"></span></a>Inside Your Templates: Swig example</h3>
+
+<pre><code>{% extends "page.swig" %}
+
+{% block content %}
+&lt;h1&gt;{{ __("Welcome to:") }} {{ title }}&lt;/h1&gt;
+&lt;p&gt;{{ desc }}&lt;/p&gt;
+{% endblock %}
+</code></pre>
+
+<h3>
+<a name="inside-your-templates-ejs-example" class="anchor" href="#inside-your-templates-ejs-example"><span class="octicon octicon-link"></span></a>Inside Your Templates: ejs example</h3>
+
+<pre><code>&lt;head&gt;
+  &lt;title&gt;&lt;%=__("title") %&gt;&lt;/title&gt;
+  ...
+</code></pre>
+
+<h2>
+<a name="loc-api" class="anchor" href="#loc-api"><span class="octicon octicon-link"></span></a>loc API:</h2>
+
+<h3>
+<a name="__string-" class="anchor" href="#__string-"><span class="octicon octicon-link"></span></a><code>__(string, [...])</code>
+</h3>
+
+<p>Translates a string according to the current locale. Also supports sprintf syntax, allowing you to replace text, using the node-sprintf module.</p>
+
+<p>For example:</p>
+
+<pre><code>var greeting = i18n.__('Hello %s, how are you today?', 'Marcus');
+</code></pre>
+
+<p>this puts <strong>Hello Marcus, how are you today?</strong>. You might also add endless arguments or even nest it.</p>
+
+<pre><code>var greeting = i18n.__('Hello %s, how are you today? How was your %s?', 
+    'Marcus', i18n.__('weekend'));
+</code></pre>
+
+<p>which puts <strong>Hello Marcus, how are you today? How was your weekend?</strong></p>
+
+<p>You might even use dynamic variables. They get added to the current locale file if they do not yet exist.</p>
+
+<pre><code>var greetings = ['Hi', 'Hello', 'Howdy'];
+for (var i = 0; i &lt; greetings.length; i++) {
+    console.log( i18n.__(greetings[i]) );
+};
+</code></pre>
+
+<p>which outputs:</p>
 
 <pre><code>Hi
 Hello
 Howdy
 </code></pre>
 
-<h3>plural support</h3>
+<h3>
+<a name="__none-other-count-" class="anchor" href="#__none-other-count-"><span class="octicon octicon-link"></span></a><code>__n(one, other, count, [...])</code>
+</h3>
 
-<p>different plural froms are supported as response to <code>count</code>:</p>
+<p>Different plural forms are supported as a response to <code>count</code>:</p>
 
-<pre><code>var singular = __n('%s cat', '%s cats', 1);
-var plural = __n('%s cat', '%s cats', 3);
+<pre><code>var singular = i18n.__n('%s cat', '%s cats', 1);
+var plural = i18n.__n('%s cat', '%s cats', 3);
 </code></pre>
 
-<p>this puts <strong>1 cat</strong> or <strong>3 cats</strong>
-and again these could get nested:</p>
+<p>this gives you <strong>1 cat</strong> and <strong>3 cats</strong>. As with <code>__(...)</code> these could be nested:</p>
 
-<pre><code>var singular = __n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 1, 'tree');
-var plural = __n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 3, 'tree');
+<pre><code>var singular = i18n.__n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 1, 'tree');
+var plural = i18n.__n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 3, 'tree');
 </code></pre>
 
-<p>putting <strong>There is one monkey in the tree</strong> or <strong>There are 3 monkeys in the tree</strong></p>
+<p>putting <strong>There is one monkey in the tree</strong> or <strong>There are 3 monkeys in the tree</strong>.</p>
 
-<h2>Storage</h2>
+<h3>
+<a name="getlocale" class="anchor" href="#getlocale"><span class="octicon octicon-link"></span></a><code>getLocale()</code>
+</h3>
 
-<h3>json file</h3>
+<p>Returns a string containing the current locale. If no locale has been specified then it default to the value specified in <code>defaultLocale</code>.</p>
 
-<p>the above will automatically generate a <code>en.js</code> by default inside <code>./locales/</code> which looks like</p>
+<h3>
+<a name="setlocalelocale" class="anchor" href="#setlocalelocale"><span class="octicon octicon-link"></span></a><code>setLocale(locale)</code>
+</h3>
+
+<p>Sets a locale to the specified string. If the locale is unknown, the locale defaults to the one specified by <code>defaultLocale</code>. For example if you have locales of 'en' and 'de', and a <code>defaultLocale</code> of 'en', then call <code>.setLocale('ja')</code> it will be equivalent to calling <code>.setLocale('en')</code>.</p>
+
+<h3>
+<a name="ispreferredlocale" class="anchor" href="#ispreferredlocale"><span class="octicon octicon-link"></span></a><code>isPreferredLocale()</code>
+</h3>
+
+<p>To be used with Express.js or another framework that provides a <code>request</code> object. This method works if a <code>request</code> option has been specified when the i18n object was instantiated.</p>
+
+<p>This method returns true if the locale specified by <code>getLocale</code> matches a language desired by the browser's <code>Accept-language</code> header.</p>
+
+<h2>
+<a name="locale-definition" class="anchor" href="#locale-definition"><span class="octicon octicon-link"></span></a>locale definition</h2>
+
+<p>An example locale definition <code>en.js</code> inside <code>./locales/</code> may look something like:</p>
 
 <pre><code>{
     "Hello": "Hello",
@@ -194,42 +263,108 @@ var plural = __n('There is one monkey in the %%s', 'There are %d monkeys in the 
 }
 </code></pre>
 
-<p>that file can be edited or just uploaded to <a href="http://docs.webtranslateit.com/file_formats/">webtranslateit</a> for any kind of collaborative translation workflow:</p>
+<p>that file can be edited or just uploaded to <a href="http://docs.webtranslateit.com/file_formats/">webtranslateit</a> for any kind of collaborative translation workflow.</p>
 
-<pre><code>{
-    "Hello": "Hallo",
-    "Hello %s, how are you today?": "Hallo %s, wie geht es dir heute?",
-    "weekend": "Wochenende",
-    "Hello %s, how are you today? How was your %s.": "Hallo %s, wie geht es dir heute? Wie war dein %s.",
-    "Hi": "Hi",
-    "Howdy": "Hallöchen",
-    "%s cat": {
-        "one": "%s Katze",
-        "other": "%s Katzen"
-    },
-    "There is one monkey in the %%s": {
-        "one": "Im %%s sitzt ein Affe",
-        "other": "Im Baum sitzen %d Affen"
-    },
-    "tree": "Baum"
+<h2>
+<a name="locale-definition-with-contexts-example" class="anchor" href="#locale-definition-with-contexts-example"><span class="octicon octicon-link"></span></a>locale definition with contexts example</h2>
+
+<h3>
+<a name="example-source-files" class="anchor" href="#example-source-files"><span class="octicon octicon-link"></span></a>Example Source Files:</h3>
+
+<pre><code>// locales/en.json
+{
+    "Home": "Start Page",
+    "Lessons": "Lessons",
+    "About Us": "About Us"
+}
+
+// locales/de-ch.json
+{
+    "Home": "De Hei",
+    "Lessons": "Lektion",
+    "About Us": "Über üüs"
+}
+
+// locales/url/de-ch.json
+{
+    "title": "Tegscht"
+}
+
+// locales/url/cms/de-ch.json
+{
+    "cms title": "CMS Überschrift",
+    "nested": {
+        "keys": "Verschachtelt"
+    }
 }
 </code></pre>
 
-<h2>Changelog</h2>
+<h3>
+<a name="queries" class="anchor" href="#queries"><span class="octicon octicon-link"></span></a>Queries:</h3>
 
-<ul>
-<li>0.3.5: fixed some issues, prepared refactoring, prepared publishing to npm finally</li>
-<li>0.3.4: merged pull request #13 from Fuitad/master and updated README</li>
-<li>0.3.3: merged pull request from codders/master and modified for backward compatibility. Usage and tests pending</li>
-<li>0.3.2: merged pull request #7 from carlptr/master and added tests, modified fswrite to do sync writes</li>
-<li>0.3.0: added configure and init with express support (calling guessLanguage() via 'accept-language')</li>
-<li>0.2.0: added plurals</li>
-<li>0.1.0: added tests</li>
-<li>0.0.1: start </li>
-</ul>
+<pre><code>// Example 1
+// locale sep   key        Resulting Value
+//  ----  ---  ------      ---------------
+// ['en']['/']['Home'] --&gt; "Start Page"
+
+// Example 2
+//  locale     context     sep     key            Resulting Value
+//  -------  ------------  ---  -----------      -----------------
+// ['de-ch']['url']['cms']['/']['cms title'] --&gt; "CMS Überschrift"
+
+// Example 3
+//  locale     context     sep       key              Resulting Value
+//  -------  ------------  ---  ----------------      ---------------
+// ['de-ch']['url']['cms']['/']['nested']['keys'] --&gt; "Verschachtelt"
+</code></pre>
+
+<h3>
+<a name="localecache" class="anchor" href="#localecache"><span class="octicon octicon-link"></span></a>localeCache:</h3>
+
+<pre><code>{
+    "en": {
+        "Home": "Start Page",
+        "Lessons": "Lessons",
+        "About Us": "About Us"
+    },
+    "de-ch": {
+        "/": {
+            "Home": "De Hei",
+            "Lessons": "Lektion",
+            "About Us": "Über üüs"
+        },
+        "url": {
+            "/": {
+                "title": "Tegscht"
+            },
+            "cms": {
+                "/": {
+                    "cms title": "CMS Überschrift",
+                    "nested": {
+                        "keys": "Verschachtelt"
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+<h2>
+<a name="tests" class="anchor" href="#tests"><span class="octicon octicon-link"></span></a>tests</h2>
+
+<p>run the tests with </p>
+
+<pre><code>mocha
+</code></pre>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>license</h2>
+
+<p><a href="https://github.com/intesso/loc/blob/master/LICENSE">MIT License</a></p>
       </section>
       <footer>
-        <p>This project is maintained by <a href="https://github.com/mashpie">mashpie</a></p>
+        <p>This project is maintained by <a href="https://github.com/intesso">intesso</a></p>
         <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
